@@ -98,6 +98,10 @@ void SIFT(PGM &_src,list<DESCRIPTOR*> des)
 
     PGM **Fpow=new PGM*[OCT];
     PGM **Farg=new PGM*[OCT];
+    for(/*int*/ o=0;o<OCT;o++){
+        Fpow[o]=new PGM[S];
+        Farg[o]=new PGM[S];
+    }
     
     calc_orientation(L,Fpow,Farg,keys);
 
@@ -120,9 +124,23 @@ void SIFT(PGM &_src,list<DESCRIPTOR*> des)
 //-----------------------------------------------------------------
 //ÉÅÉCÉì
 //-----------------------------------------------------------------
-int main()
+int main(int argc,char **argv)
 {
-    PGM src1("b.ppm");
+	FILE *fp;
+
+	if(argc < 3) {
+		fprintf(stderr,"USAGE command ppmInFile ppmOutFile\n");
+		exit(-10);
+	}
+	if(!(fp=fopen(argv[1],"r"))) {
+		fprintf(stderr,"cannot read file=[%s]\n",argv[2]);
+		exit(-1);
+	}
+	fclose(fp);
+		
+
+    //PGM src1("b.ppm");
+	PGM src1(argv[1]);
     
     list<DESCRIPTOR*> key1;
     

@@ -139,6 +139,9 @@ PGM PGM::operator-(const PGM &a)
 //-----------------------------------------------------------------
 bool PGM::load_from_file(const string &file_name)
 {
+    int mode;
+    unsigned char moji[2];
+
     ifstream file(file_name.c_str());
     
     if(!file.is_open()) return false;
@@ -147,7 +150,14 @@ bool PGM::load_from_file(const string &file_name)
     string str;
     
     file>>str;
-    if(str=="P3") grayscale=false;      //PPMファイル？
+    if(str=="P3") {
+      grayscale=false;      //PPMファイル？
+      mode = 3;
+    }
+    else if(str != "P3") {
+      grayscale=false;
+      mode = 6;
+    }
     else if(str!="P2") return false;    //PGMファイル？
     
     //画像サイズ読み込み
@@ -166,34 +176,51 @@ bool PGM::load_from_file(const string &file_name)
     //配列確保
     reset(W,H);
     
-    //画素値読み込み
-    for(int y=0;y<H;y++){
-        for(int x=0;x<W;x++){
-            file>>str;
-            while(str[0]=='#'){
-                getline(file,str);
-                file>>str;
-            }
+    if(mode == 3) {
+      //画素値読み込み
+      for(int y=0;y<H;y++){
+          for(int x=0;x<W;x++){
+              file>>str;
+              while(str[0]=='#'){
+                  getline(file,str);
+                  file>>str;
+              }
             
-            if(grayscale) pixels[x][y]=/*std::*/atoi(str.c_str())/255.0;
-            else{
-                double r=/*std::*/atoi(str.c_str())/255.0;
-                double g,b;
-                for(int j=0;j<2;j++){
-                    file>>str;
-                    while(str[0]=='#'){
-                        getline(file,str);
-                        file>>str;
-                    }
-                    switch(j){
-                        case 0: g=/*std::*/atoi(str.c_str())/255.0; break;
-                        case 1: b=/*std::*/atoi(str.c_str())/255.0; break;
-                    }
-                }
+              if(grayscale) pixels[x][y]=/*std::*/atoi(str.c_str())/255.0;
+              else{
+                  double r=/*std::*/atoi(str.c_str())/255.0;
+                  double g,b;
+                  for(int j=0;j<2;j++){
+                      file>>str;
+                      while(str[0]=='#'){
+                          getline(file,str);
+                          file>>str;
+                      }
+                      switch(j){
+                          case 0: g=/*std::*/atoi(str.c_str())/255.0; break;
+                          case 1: b=/*std::*/atoi(str.c_str())/255.0; break;
+                      }
+                  }
                 
-                pixels[x][y]=r*0.299+g*0.587+b*0.114;
-            }
-        }
+                  pixels[x][y]=r*0.299+g*0.587+b*0.114;
+              }
+          }
+      }
+    }
+    else if(mode == 6) {
+      moji[1]='\0';
+      for(int y=0;y<H;y++){
+          for(int x=0;x<W;x++){ 
+            file.read((char *)&moji,sizeof(unsigned char));
+            double r = moji[0]/255.0;
+            file.read((char *)&moji,sizeof(unsigned char));
+            double g = moji[0]/255.0;
+            file.read((char *)&moji,sizeof(unsigned char));
+            double b = moji[0]/255.0;
+
+            pixels[x][y]=r*0.299+g*0.587+b*0.114;          
+         }
+      }
     }
     file.close();
     
