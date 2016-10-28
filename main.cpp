@@ -16,12 +16,16 @@ int OCT;
 #ifdef PLOT
 void plot_image(PGM &src,list<DESCRIPTOR*> &keys)
 {
+#ifdef UNIX
     FILE *gp=_popen("gnuplot","w");
-    
+#else
+    FILE *gp=fopen("sift.dem","w");
+#endif
     int W=src.width();
     int H=src.height();
     
     fprintf(gp,"set yrange [] reverse\n");
+    //fprintf(gp,"set yrange restore\n");
     fprintf(gp,"set format x ''\n");
     fprintf(gp,"set format y ''\n");
     fprintf(gp,"set size ratio %lf\n",H/(double)W);
@@ -33,7 +37,11 @@ void plot_image(PGM &src,list<DESCRIPTOR*> &keys)
     fprintf(gp,"plot '-' matrix with image,'-' w l\n");
     
     //画像の表示
+#if 1
     for(int y=0;y<H;y++){
+#else
+    for(int y=H-1;y>=0;y--){
+#endif
         for(int x=0;x<W;x++){
             fprintf(gp,"%f ",src[x][y]);
         }
@@ -64,8 +72,12 @@ void plot_image(PGM &src,list<DESCRIPTOR*> &keys)
     
     fflush(gp);
     cout<<endl<<"enter>>";
+#ifdef UNIX
     getchar();
     _pclose(gp);
+#else
+	fclose(gp);
+#endif
 }
 #endif
 //-----------------------------------------------------------------
@@ -105,8 +117,11 @@ void SIFT(PGM &_src,list<DESCRIPTOR*> des)
     
     calc_orientation(L,Fpow,Farg,keys);
 
-    calc_descriptor(L,Fpow,Farg,keys,des);    
-
+    calc_descriptor(L,Fpow,Farg,keys,des);  
+	
+#ifdef PLOT
+    plot_image(_src,des);
+#endif    
     //--バッファ解放
     for(/*int*/ o=0;o<OCT;o++){
         delete[] L[o];
@@ -157,7 +172,7 @@ int main(int argc,char **argv)
     cout<<"time = "<<(end-str)/(double)CLOCKS_PER_SEC<<"[sec]"<<endl;
     
 #ifdef PLOT
-    plot_image(src1,key1);
+    //plot_image(src1,key1);
 #endif    
     return 0;
 }

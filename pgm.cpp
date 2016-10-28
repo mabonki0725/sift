@@ -141,6 +141,10 @@ bool PGM::load_from_file(const string &file_name)
 {
     int mode;
     unsigned char moji[2];
+    FILE *fw;
+
+    int dbg=0;
+    if(dbg) fw=fopen("dbg.txt","w");
 
     ifstream file(file_name.c_str());
     
@@ -208,21 +212,45 @@ bool PGM::load_from_file(const string &file_name)
       }
     }
     else if(mode == 6) {
+      file.read((char *)&moji,sizeof(unsigned char));  /* 改行コードを無視する */
       moji[1]='\0';
       for(int y=0;y<H;y++){
+ 
           for(int x=0;x<W;x++){ 
+            if(y == 137 && x == 103) {
+              printf("%d %d\n",y,x);
+            }
             file.read((char *)&moji,sizeof(unsigned char));
-            double r = moji[0]/255.0;
-            file.read((char *)&moji,sizeof(unsigned char));
-            double g = moji[0]/255.0;
-            file.read((char *)&moji,sizeof(unsigned char));
-            double b = moji[0]/255.0;
+            if(dbg && fw) fprintf(fw,"%3d ",moji[0]);
 
-            pixels[x][y]=r*0.299+g*0.587+b*0.114;          
+#if 0
+            if(moji[0] == '#') {
+              while(moji[0] != 0x0a) {
+                file.read((char *)&moji,sizeof(unsigned char));
+              }
+            }
+#else
+            if(0);
+#endif
+            else {
+              double r = moji[0]/255.0;
+
+              file.read((char *)&moji,sizeof(unsigned char));
+              if(dbg && fw) fprintf(fw,"%3d ",moji[0]);
+              double g = moji[0]/255.0;
+
+              file.read((char *)&moji,sizeof(unsigned char));
+              if(dbg && fw) fprintf(fw,"%3d ",moji[0]);
+              double b = moji[0]/255.0;   
+              
+              pixels[x][y]=r*0.299+g*0.587+b*0.114;
+            }
          }
+         if(dbg && fw) fprintf(fw,"\n");
       }
     }
     file.close();
+    if(dbg) fclose(fw);
     
     return true;
 }
