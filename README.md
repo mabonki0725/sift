@@ -1,6 +1,6 @@
 ##H2 SIFT(Scale Invariant Feature Transform)特徴量の計算
 
-_処理_ 
+_処理_  
 1. P3 or P2 PPMファイルの読込み  
 2. Gussian Filterの異なるσ幅での画像の平滑化  
 3. 隣合うσ幅の平滑化画像の差を特徴点とする  
