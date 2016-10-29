@@ -1,4 +1,4 @@
-##H2 SIFT(Scale Invariant Feature Transform)特徴量の計算
+##SIFT(Scale Invariant Feature Transform)特徴量の計算
 
 _処理_  
 1. P3 or P2 PPMファイルの読込み  
